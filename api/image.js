@@ -9,47 +9,21 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
-  const API_KEYS = [
-    process.env.GEMINI_API_KEY_1,
-    process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3,
-  ].filter(Boolean);
+  try {
+    const encodedPrompt = encodeURIComponent(prompt);
+    const seed = Math.floor(Math.random() * 1000000);
+    const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true&seed=${seed}`;
 
-  if (API_KEYS.length === 0) return res.status(500).json({ error: 'No API keys configured' });
+    const response = await fetch(url);
 
-  for (var i = 0; i < API_KEYS.length; i++) {
-    const apiKey = API_KEYS[i];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+    if (!response.ok) {
+      return res.status(500).json({ error: `Image generation failed: ${response.status}` });
+    }
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseModalities: ['IMAGE', 'TEXT']
-          }
-        })
-      });
-
-      const data = await response.json();
-      if (data.error) {
-        if (data.error.code === 429 || data.error.code === 503) continue;
-        return res.status(500).json({ error: data.error.message });
-      }
-
-      const parts = data.candidates?.[0]?.content?.parts || [];
-      for (const part of parts) {
-        if (part.inlineData?.mimeType?.startsWith('image/')) {
-          const imgBuffer = Buffer.from(part.inlineData.data, 'base64');
-          res.setHeader('Content-Type', part.inlineData.mimeType);
-          return res.status(200).send(imgBuffer);
-        }
-      }
-      continue;
-    } catch (e) { continue; }
+    const buffer = await response.arrayBuffer();
+    res.setHeader('Content-Type', response.headers.get('content-type') || 'image/jpeg');
+    return res.status(200).send(Buffer.from(buffer));
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
   }
-
-  return res.status(500).json({ error: '이미지 생성 실패' });
 }
