@@ -9,15 +9,28 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
-  try {
-    const encodedPrompt = encodeURIComponent(prompt);
-    const seed = Math.floor(Math.random() * 1000000);
-    const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true&seed=${seed}`;
+  const hfToken = process.env.HF_TOKEN;
+  if (!hfToken) return res.status(500).json({ error: 'HF_TOKEN not configured' });
 
-    const response = await fetch(url);
+  try {
+    const response = await fetch(
+      "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${hfToken}`,
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: { num_inference_steps: 4 }
+        }),
+      }
+    );
 
     if (!response.ok) {
-      return res.status(500).json({ error: `Image generation failed: ${response.status}` });
+      const errText = await response.text();
+      return res.status(500).json({ error: `HF API error: ${response.status}`, detail: errText });
     }
 
     const buffer = await response.arrayBuffer();
