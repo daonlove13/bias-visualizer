@@ -19,15 +19,17 @@ export default async function handler(req, res) {
 
   for (var i = 0; i < API_KEYS.length; i++) {
     const apiKey = API_KEYS[i];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
 
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          instances: [{ prompt }],
-          parameters: { sampleCount: 1 }
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseModalities: ['IMAGE', 'TEXT']
+          }
         })
       });
 
@@ -37,12 +39,15 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: data.error.message });
       }
 
-      const b64 = data.predictions?.[0]?.bytesBase64Encoded;
-      if (!b64) continue;
-
-      const imgBuffer = Buffer.from(b64, 'base64');
-      res.setHeader('Content-Type', 'image/png');
-      return res.status(200).send(imgBuffer);
+      const parts = data.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          const imgBuffer = Buffer.from(part.inlineData.data, 'base64');
+          res.setHeader('Content-Type', part.inlineData.mimeType);
+          return res.status(200).send(imgBuffer);
+        }
+      }
+      continue;
     } catch (e) { continue; }
   }
 
