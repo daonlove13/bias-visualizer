@@ -39,7 +39,6 @@ export default function App() {
       setLoading(false);
       setStep("");
 
-      // 이미지 생성 별도로
       if (analysis.originalEnglish) {
         setImgLoading(true);
         try {
@@ -74,7 +73,6 @@ export default function App() {
       color: "#e8e4dc",
       fontFamily: "'Georgia', 'Times New Roman', serif",
     }}>
-      {/* 헤더 */}
       <div style={{ borderBottom: "1px solid #2a2a2a", padding: "2rem 3rem", display: "flex", alignItems: "baseline", gap: "1.5rem" }}>
         <h1 style={{ fontSize: "1.5rem", fontWeight: "400", letterSpacing: "0.08em", margin: 0, color: "#ffffff" }}>
           편향 렌즈
@@ -140,7 +138,6 @@ export default function App() {
         {result && (
           <div style={{ borderTop: "1px solid #2a2a2a", paddingTop: "3rem" }}>
 
-            {/* 편향 여부 */}
             <div style={{ marginBottom: "2.5rem" }}>
               <div style={{
                 display: "inline-block",
@@ -157,7 +154,6 @@ export default function App() {
               </p>
             </div>
 
-            {/* 심리학 이론 */}
             <div style={{ borderLeft: "2px solid #333", paddingLeft: "1.5rem", marginBottom: "3rem" }}>
               <div style={{ fontSize: "0.75rem", color: "#888", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>
                 {result.psychTheory}
@@ -168,26 +164,16 @@ export default function App() {
             </div>
 
             {/* 이미지 비교 */}
-            <div style={{ marginBottom: "3rem" }}>
+            <div style={{ marginBottom: "1.5rem" }}>
               <div style={{ fontSize: "0.75rem", color: "#777", letterSpacing: "0.1em", marginBottom: "1.5rem" }}>
                 이미지 비교
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                 {["original", "neutral"].map(type => (
                   <div key={type}>
-                    <div style={{ fontSize: "0.8rem", color: "#888", marginBottom: "0.5rem" }}>
+                    <div style={{ fontSize: "0.8rem", color: "#888", marginBottom: "0.7rem" }}>
                       {type === "original" ? "원본 프롬프트" : "중립화된 프롬프트"}
                     </div>
-                    {/* 중립화 설명 */}
-                    {type === "neutral" && result.neutralizationExplanation && (
-                      <div style={{
-                        fontSize: "0.8rem", color: "#888", lineHeight: "1.6",
-                        marginBottom: "0.7rem", padding: "0.6rem 0.8rem",
-                        background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "2px",
-                      }}>
-                        {result.neutralizationExplanation}
-                      </div>
-                    )}
                     <div style={{
                       background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "2px",
                       aspectRatio: "1", display: "flex", alignItems: "center",
@@ -219,13 +205,28 @@ export default function App() {
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: "0.85rem", color: "#666", marginTop: "1rem", lineHeight: "1.7" }}>
-                * 중립화된 버전도 완전히 편향에서 자유롭지 않다. 이 비교는 어느 쪽이 정답인지를 보여주는 것이 아니라,
-                원본 프롬프트에 어떤 가정이 담겨 있었는지를 드러내는 것이다.
-              </p>
             </div>
 
-            {/* 성찰 질문 */}
+            {/* 중립화 설명 - 이미지 아래 별도 박스 */}
+            {result.neutralizationExplanation && (
+              <div style={{
+                background: "#141414", border: "1px solid #2a2a2a", borderRadius: "2px",
+                padding: "1.2rem 1.5rem", marginBottom: "1.5rem",
+              }}>
+                <div style={{ fontSize: "0.75rem", color: "#888", letterSpacing: "0.1em", marginBottom: "0.6rem" }}>
+                  중립화 방식
+                </div>
+                <p style={{ fontSize: "0.9rem", lineHeight: "1.7", color: "#bbb", margin: 0 }}>
+                  {result.neutralizationExplanation}
+                </p>
+              </div>
+            )}
+
+            <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "3rem", lineHeight: "1.7" }}>
+              * 중립화된 버전도 완전히 편향에서 자유롭지 않다. 이 비교는 어느 쪽이 정답인지를 보여주는 것이 아니라,
+              원본 프롬프트에 어떤 가정이 담겨 있었는지를 드러내는 것이다.
+            </p>
+
             <div style={{ background: "#141414", border: "1px solid #2a2a2a", borderRadius: "2px", padding: "2rem" }}>
               <div style={{ fontSize: "0.75rem", color: "#777", letterSpacing: "0.1em", marginBottom: "1.5rem" }}>
                 스스로 생각해보기
