@@ -21,16 +21,23 @@ export default async function handler(req, res) {
 
 프롬프트: "${prompt}"
 
+분석 시 다음을 모두 고려하세요:
+1. 프롬프트에 어떤 가정·편향이 내포되어 있는가
+2. 명시적 편향(외모, 성별, 인종, 계층, 직업 등)과 암묵적 편향(누락된 다양성) 모두 식별
+3. 중립화해도 사라지지 않을 잔존 편향이 무엇인지 (예: "간호사"는 다양성 키워드를 추가해도 모델이 여전히 여성으로 생성하는 경향이 있음)
+4. 가장 적합한 심리학 이론 선택 (사회 정체성 이론, 고정관념 위협, 암묵적 편향, 대표성 휴리스틱, 사회비교이론, 점화 효과, 후광 효과, 귀인 오류, 내집단 편애, 확증 편향, 가용성 휴리스틱, 외집단 동질성 효과 등 중에서)
+
 반환 형식:
 {
   "hasBias": true 또는 false,
-  "biasType": "편향 유형 (외모/성별/인종/계층/문화 등 구체적으로)",
-  "biasDescription": "이 프롬프트에 어떤 편향이 내포되어 있는지 2-3문장 설명",
-  "psychTheory": "가장 관련성 높은 심리학 이론 이름 (사회 정체성 이론, 고정관념 위협, 암묵적 편향, 대표성 휴리스틱, 사회비교이론, 점화 효과, 후광 효과, 귀인 오류, 내집단 편애, 확증 편향 등 다양한 이론 중 가장 적합한 것 선택)",
+  "biasType": "편향 유형 구체적으로 (외모/성별/인종/계층/직업/문화 등 — 복합 편향이면 여러 개 명시)",
+  "biasDescription": "이 프롬프트에 어떤 편향이 내포되어 있는지 2-3문장 설명. 명시적 편향과 암묵적 편향 모두 짚을 것",
+  "psychTheory": "가장 관련성 높은 심리학 이론 이름 (영문 원어 병기: 예 '대표성 휴리스틱 (Representativeness Heuristic)')",
   "psychExplanation": "해당 이론이 이 편향과 어떻게 연결되는지 2문장 설명",
-  "neutralizationExplanation": "원본 프롬프트에서 어떤 표현을 왜 어떻게 바꿨는지 구체적으로 설명 (예: '잘생긴'이라는 주관적 미적 기준을 제거하고 다양한 인종·체형·나이의 사람들이 등장하도록 명시적으로 다양성을 주입)",
-  "neutralPrompt": "편향을 완화한 영어 프롬프트. 핵심 규칙: (1) 'a photo of' 또는 'photorealistic portrait of'로 시작, (2) 'diverse' 'various ethnicities' 'different body types' 'multiple ages' 같은 명시적 다양성 키워드 포함, (3) 'beautiful' 'handsome' 'successful' 'dangerous' 같은 평가적 형용사 제거, (4) 50자 이상 구체적으로 작성",
-  "originalEnglish": "원본 프롬프트를 영어로 변환. 'a photo of' 또는 'photorealistic portrait of'로 시작해서 사진처럼 나오게 작성 (예: '잘생긴 남자를 그려줘' → 'photorealistic portrait of a handsome man')",
+  "neutralizationExplanation": "원본 프롬프트에서 어떤 표현을 왜 어떻게 바꿨는지 구체적으로 설명",
+  "residualBias": "중립화 후에도 모델이 출력할 가능성이 높은 잔존 편향 설명. 왜 이 편향은 프롬프트만으로 제거되지 않는지 2-3문장으로 설명 (예: '간호사=여성' 같은 데이터 깊이 박힌 통계적 연관성)",
+  "neutralPrompt": "편향을 완화한 영어 프롬프트. 규칙: (1) 'a photo of' 또는 'photorealistic portrait of'로 시작, (2) 'diverse' 'various ethnicities' 'different body types' 'multiple ages' 'mixed genders' 같은 명시적 다양성 키워드 포함, (3) 평가적 형용사 제거, (4) 50자 이상 구체적으로",
+  "originalEnglish": "원본 프롬프트를 영어로 변환. 'a photo of' 또는 'photorealistic portrait of'로 시작해서 사진처럼 나오게 작성",
   "reflectionQuestions": ["성찰 질문 1", "성찰 질문 2", "성찰 질문 3"]
 }`;
 
@@ -46,7 +53,7 @@ export default async function handler(req, res) {
           contents: [{ parts: [{ text: systemPrompt }] }],
           generationConfig: {
             temperature: 0.3,
-            maxOutputTokens: 2000,
+            maxOutputTokens: 2500,
             thinkingConfig: { thinkingBudget: 0 }
           }
         })
