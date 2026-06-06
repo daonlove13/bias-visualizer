@@ -17,19 +17,20 @@ export default async function handler(req, res) {
 
   if (API_KEYS.length === 0) return res.status(500).json({ error: 'No API keys configured' });
 
-  const systemPrompt = `당신은 AI 이미지 생성 편향 분석 전문가입니다. 아래 프롬프트를 분석하고 반드시 JSON만 반환하세요. 마크다운 코드블록 없이 순수 JSON만.
+  const systemPrompt = `당신은 AI 이미지 생성 편향 분석 전문가이자 사회심리학자입니다. 아래 프롬프트를 분석하고 반드시 JSON만 반환하세요. 마크다운 코드블록 없이 순수 JSON만.
 
 프롬프트: "${prompt}"
 
 반환 형식:
 {
-  "hasBias": true,
-  "biasType": "편향 유형 (외모/성별/인종/계층 등)",
+  "hasBias": true 또는 false,
+  "biasType": "편향 유형 (외모/성별/인종/계층/문화 등 구체적으로)",
   "biasDescription": "이 프롬프트에 어떤 편향이 내포되어 있는지 2-3문장 설명",
-  "psychTheory": "관련 심리학 이론 이름",
+  "psychTheory": "가장 관련성 높은 심리학 이론 이름 (사회 정체성 이론, 고정관념 위협, 암묵적 편향, 대표성 휴리스틱, 사회비교이론, 점화 효과, 후광 효과, 귀인 오류, 내집단 편애, 확증 편향 등 다양한 이론 중 가장 적합한 것 선택)",
   "psychExplanation": "해당 이론이 이 편향과 어떻게 연결되는지 2문장 설명",
-  "neutralPrompt": "편향을 완화한 중립적 영어 프롬프트 (이미지 생성용)",
-  "originalEnglish": "원본 프롬프트를 영어로 변환 (이미지 생성용)",
+  "neutralizationExplanation": "원본 프롬프트에서 어떤 표현을 왜 어떻게 바꿨는지 구체적으로 설명 (예: '잘생긴'이라는 주관적 미적 기준을 제거하고 외모 묘사 없이 단순히 인물만 요청하도록 변경)",
+  "neutralPrompt": "편향을 완화한 중립적 영어 프롬프트 (이미지 생성용, 구체적이고 명확하게)",
+  "originalEnglish": "원본 프롬프트를 영어로 직역 (이미지 생성용)",
   "reflectionQuestions": ["성찰 질문 1", "성찰 질문 2", "성찰 질문 3"]
 }`;
 
@@ -44,8 +45,8 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           contents: [{ parts: [{ text: systemPrompt }] }],
           generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 1500,
+            temperature: 0.3,
+            maxOutputTokens: 2000,
             thinkingConfig: { thinkingBudget: 0 }
           }
         })
