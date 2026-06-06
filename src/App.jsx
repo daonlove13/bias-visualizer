@@ -39,7 +39,7 @@ export default function App() {
       setLoading(false);
       setStep("");
 
-      if (analysis.originalEnglish) {
+      if (analysis.analyzable !== false && analysis.originalEnglish) {
         setImgLoading(true);
         try {
           const [origRes, neuRes] = await Promise.all([
@@ -135,20 +135,40 @@ export default function App() {
 
         {error && <div style={{ color: "#e74c3c", marginBottom: "2rem" }}>{error}</div>}
 
-        {result && (
+        {/* 분석 불가 */}
+        {result && result.analyzable === false && (
+          <div style={{ borderTop: "1px solid #2a2a2a", paddingTop: "3rem" }}>
+            <div style={{
+              background: "#1a1a1a", border: "1px solid #3a3a3a", borderRadius: "2px",
+              padding: "2rem",
+            }}>
+              <p style={{ fontSize: "1rem", lineHeight: "1.8", color: "#e0ddd4", marginBottom: "1.5rem" }}>
+                {result.reason}
+              </p>
+              {result.suggestion && (
+                <div style={{ borderTop: "1px solid #2a2a2a", paddingTop: "1rem" }}>
+                  <p style={{ fontSize: "0.92rem", color: "#bbb", lineHeight: "1.7", margin: 0 }}>
+                    {result.suggestion}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 분석 결과 */}
+        {result && result.analyzable !== false && (
           <div style={{ borderTop: "1px solid #2a2a2a", paddingTop: "3rem" }}>
 
-            {/* 편향 여부 */}
+            {/* 편향 유형 + 설명 */}
             <div style={{ marginBottom: "2.5rem" }}>
               <div style={{
                 display: "inline-block",
-                background: result.hasBias ? "#2a0a0a" : "#0a2a0a",
-                border: `1px solid ${result.hasBias ? "#7a2a2a" : "#2a7a2a"}`,
+                background: "#1a1414", border: "1px solid #4a2a2a",
                 borderRadius: "2px", padding: "0.4rem 1rem", fontSize: "0.78rem",
-                letterSpacing: "0.12em", color: result.hasBias ? "#ff6b5b" : "#2ecc71",
-                marginBottom: "1rem",
+                letterSpacing: "0.12em", color: "#ff8a7a", marginBottom: "1rem",
               }}>
-                {result.hasBias ? `편향 감지됨 — ${result.biasType}` : "명시적 편향 없음"}
+                {result.biasType}
               </div>
               <p style={{ fontSize: "1rem", lineHeight: "1.8", color: "#e0ddd4" }}>
                 {result.biasDescription}
@@ -209,7 +229,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* 중립화 설명 */}
+            {/* 중립화 방식 */}
             {result.neutralizationExplanation && (
               <div style={{
                 background: "#141414", border: "1px solid #2a2a2a", borderRadius: "2px",
@@ -224,7 +244,7 @@ export default function App() {
               </div>
             )}
 
-            {/* 잔존 편향 — 새로 추가된 섹션 */}
+            {/* 잔존 편향 */}
             {result.residualBias && (
               <div style={{
                 background: "#1a1010", border: "1px solid #4a2020", borderRadius: "2px",
